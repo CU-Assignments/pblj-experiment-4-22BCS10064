@@ -1,0 +1,56 @@
+import java.util.*;
+
+class SeatBookingSystem {
+    private final boolean[] seats;
+
+    public SeatBookingSystem(int totalSeats) {
+        seats = new boolean[totalSeats];
+    }
+
+    public synchronized boolean bookSeat(int seatNumber) {
+        if (seatNumber < 0 || seatNumber >= seats.length || seats[seatNumber]) {
+            return false;
+        }
+        seats[seatNumber] = true;
+        return true;
+    }
+}
+
+class BookingThread extends Thread {
+    private final SeatBookingSystem system;
+    private final int seatNumber;
+    private final String customerName;
+
+    public BookingThread(SeatBookingSystem system, int seatNumber, String customerName, int priority) {
+        this.system = system;
+        this.seatNumber = seatNumber;
+        this.customerName = customerName;
+        setPriority(priority);
+    }
+
+    public void run() {
+        if (system.bookSeat(seatNumber)) {
+            System.out.println(customerName + " successfully booked seat " + seatNumber);
+        } else {
+            System.out.println(customerName + " failed to book seat " + seatNumber + " (Already booked or invalid)");
+        }
+    }
+}
+
+public class TicketBookingSystem {
+    public static void main(String[] args) {
+        SeatBookingSystem system = new SeatBookingSystem(10);
+
+        BookingThread vip1 = new BookingThread(system, 3, "Karan", Thread.MAX_PRIORITY);
+        BookingThread vip2 = new BookingThread(system, 5, "Aman", Thread.MAX_PRIORITY);
+        BookingThread user1 = new BookingThread(system, 3, "Kirat", Thread.NORM_PRIORITY);
+        BookingThread user2 = new BookingThread(system, 5, "Jagjit", Thread.NORM_PRIORITY);
+        BookingThread user3 = new BookingThread(system, 7, "Harman", Thread.MIN_PRIORITY);
+
+        vip1.start();
+        vip2.start();
+        user1.start();
+        user2.start();
+        user3.start();
+    }
+}
